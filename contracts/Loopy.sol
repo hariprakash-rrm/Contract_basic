@@ -365,21 +365,10 @@ contract Loopy is Context, IERC20, IERC20Metadata {
     string private _symbol;
     uint256 private _totalSupply;
     uint8 private _decimal;
-    uint256 private tax;
-
-
-
-      IUniswapV2Router02 public immutable uniswapV2Router;
-        address public uniswapV2Pair;
-        address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    //  address private constant _factoryAddress = 0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73;
-    // address private constant _routerAddress = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
-    // address private constant _deadAddress = 0x000000000000000000000000000000000000dEaD;
-    // address private _pairAddress;
-
-    // IUniswapV2Factory private _factory;
-    // IUniswapV2Router02 private _router;
-
+    uint256 private _fee;
+    IUniswapV2Router02 public immutable uniswapV2Router;
+    address public uniswapV2Pair;
+    address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     /**
      * @dev Sets the values for {name} and {symbol}.
      *
@@ -393,30 +382,27 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         string memory name_,
         string memory symbol_,
         uint8 decimal_,
-        uint256 totalSupply_
-        // address  deployer
-        
+        uint256 totalSupply_,
+        uint256  fee_
     ) {
         _name = name_;
         _symbol = symbol_;
         _decimal = decimal_;
+        _fee = fee_;
         _mint(_msgSender(), totalSupply_);
-
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(UNISWAPV2ROUTER);
-
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
         .createPair(address(this), _uniswapV2Router.WETH());
-
-        uniswapV2Router = _uniswapV2Router;
-      
-        
+        uniswapV2Router = _uniswapV2Router;   
     }
-
     /**
      * @dev Returns the name of the token.
      */
     function name() public view virtual override returns (string memory) {
         return _name;
+    }
+    function fee()internal virtual returns(uint){
+        return _fee;
     }
 
     /**
@@ -549,7 +535,6 @@ contract Loopy is Context, IERC20, IERC20Metadata {
                 _approve(sender, _msgSender(), currentAllowance - amount);
             }
         }
-
         _transfer(sender, recipient, amount);
 
         return true;
@@ -625,19 +610,13 @@ contract Loopy is Context, IERC20, IERC20Metadata {
      * - `recipient` cannot be the zero address.
      * - `sender` must have a balance of at least `amount`.
      */
-
-      address deployer = address(0x57b37F17Ac37Cd405c51aa7ae49649d3212c71fE);
-    //                         //   0x57b37F17Ac37Cd405c51aa7ae49649d3212c71fE
-    // address router = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
-                
-
     function _transfer(
         address sender,
         address recipient,
         uint256 amount
-       
+     
     ) internal virtual {
-         
+        uint256 tax = amount * _fee /100;
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
@@ -651,22 +630,18 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         unchecked {
             _balances[sender] = senderBalance - amount;
         }
-        if(recipient == uniswapV2Pair && sender != deployer){
+        if(recipient == uniswapV2Pair && sender != address(this)){
 
-        uint256 fee = amount*2/100;
-        _balances[recipient] += (amount - fee);
+        _balances[recipient] += (amount - tax);
 
-        _balances[deployer] += fee;
+        _balances[address(this)] += tax;
+     
 
         emit Transfer(sender, recipient, amount);
 
         _afterTokenTransfer(sender, recipient, amount);
     }else{
-        // uint256 fee = amount*2/100;
-    
         _balances[recipient] += amount;
-
-        // _balances[deployer] += fee;
 
         emit Transfer(sender, recipient, amount);
 
