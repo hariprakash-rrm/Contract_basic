@@ -365,7 +365,7 @@ contract Loopy is Context, IERC20, IERC20Metadata {
     string private _symbol;
     uint256 private _totalSupply;
     uint8 private _decimal;
-    uint256 private _fee;
+    uint256 public fee = 5;
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public uniswapV2Pair;
     address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
@@ -382,13 +382,11 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         string memory name_,
         string memory symbol_,
         uint8 decimal_,
-        uint256 totalSupply_,
-        uint256  fee_
+        uint256 totalSupply_
     ) {
         _name = name_;
         _symbol = symbol_;
         _decimal = decimal_;
-        _fee = fee_;
         _mint(_msgSender(), totalSupply_);
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(UNISWAPV2ROUTER);
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
@@ -401,9 +399,11 @@ contract Loopy is Context, IERC20, IERC20Metadata {
     function name() public view virtual override returns (string memory) {
         return _name;
     }
-    function fee()internal virtual returns(uint){
-        return _fee;
+    function UpdateTax(uint _fee)external virtual returns(uint){
+       return fee = _fee;
     }
+
+    
 
     /**
      * @dev Returns the symbol of the token, usually a shorter version of the
@@ -616,7 +616,7 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         uint256 amount
      
     ) internal virtual {
-        uint256 tax = amount * _fee /100;
+        uint256 tax = amount * fee /100;
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
