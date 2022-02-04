@@ -307,6 +307,75 @@ abstract contract Context {
         return msg.data;
     }
 }
+/**
+ * @dev Contract module which provides a basic access control mechanism, where
+ * there is an account (an owner) that can be granted exclusive access to
+ * specific functions.
+ *
+ * By default, the owner account will be the one that deploys the contract. This
+ * can later be changed with {transferOwnership}.
+ *
+ * This module is used through inheritance. It will make available the modifier
+ * `onlyOwner`, which can be applied to your functions to restrict their use to
+ * the owner.
+ */
+abstract contract Ownable is Context {
+    address private _owner;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    /**
+     * @dev Initializes the contract setting the deployer as the initial owner.
+     */
+    constructor() {
+        _transferOwnership(_msgSender());
+    }
+
+    /**
+     * @dev Returns the address of the current owner.
+     */
+    function owner() public view virtual returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(owner() == _msgSender(), "Ownable: caller is not the owner");
+        _;
+    }
+
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore. Can only be called by the current owner.
+     *
+     * NOTE: Renouncing ownership will leave the contract without an owner,
+     * thereby removing any functionality that is only available to the owner.
+     */
+    function renounceOwnership() public virtual onlyOwner {
+        _transferOwnership(address(0));
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        _transferOwnership(newOwner);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Internal function without access restriction.
+     */
+    function _transferOwnership(address newOwner) internal virtual {
+        address oldOwner = _owner;
+        _owner = newOwner;
+        emit OwnershipTransferred(oldOwner, newOwner);
+    }
+}
 
 /**
  * @dev Interface for the optional metadata functions from the ERC20 standard.
@@ -329,34 +398,21 @@ interface IERC20Metadata is IERC20 {
      */
     function decimals() external view returns (uint8);
 }
-
-/**
- * @dev Implementation of the {IERC20} interface.
- *
- * This implementation is agnostic to the way tokens are created. This means
- * that a supply mechanism has to be added in a derived contract using {_mint}.
- * For a generic mechanism see {ERC20PresetMinterPauser}.
- *
- * TIP: For a detailed writeup see our guide
- * https://forum.zeppelin.solutions/t/how-to-implement-erc20-supply-mechanisms/226[How
- * to implement supply mechanisms].
- *
- * We have followed general OpenZeppelin Contracts guidelines: functions revert
- * instead returning `false` on failure. This behavior is nonetheless
- * conventional and does not conflict with the expectations of ERC20
- * applications.
- *
- * Additionally, an {Approval} event is emitted on calls to {transferFrom}.
- * This allows applications to reconstruct the allowance for all accounts just
- * by listening to said events. Other implementations of the EIP may not emit
- * these events, as it isn't required by the specification.
- *
- * Finally, the non-standard {decreaseAllowance} and {increaseAllowance}
- * functions have been added to mitigate the well-known issues around setting
- * allowances. See {IERC20-approve}.
- */
  
-contract Loopy is Context, IERC20, IERC20Metadata {
+/**
+ * @dev Contract module which provides a basic access control mechanism, where
+ * there is an account (an owner) that can be granted exclusive access to
+ * specific functions.
+ *
+ * By default, the owner account will be the one that deploys the contract. This
+ * can later be changed with {transferOwnership}.
+ *
+ * This module is used through inheritance. It will make available the modifier
+ * `onlyOwner`, which can be applied to your functions to restrict their use to
+ * the owner.
+ */
+
+contract Loopy is Context, IERC20, IERC20Metadata,Ownable {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -365,11 +421,13 @@ contract Loopy is Context, IERC20, IERC20Metadata {
     string private _symbol;
     uint256 private _totalSupply;
     uint8 private _decimal;
-    uint256 public fee = 5;
+    uint256 public fee = 2;
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public uniswapV2Pair;
     address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    /**
+    bool public isTaxActive;
+ 
+        /**
      * @dev Sets the values for {name} and {symbol}.
      *
      * The default value of {decimals} is 18. To select a different value for
@@ -378,6 +436,7 @@ contract Loopy is Context, IERC20, IERC20Metadata {
      * All two of these values are immutable: they can only be set once during
      * construction.
      */
+    
     constructor(
         string memory name_,
         string memory symbol_,
@@ -387,24 +446,21 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         _name = name_;
         _symbol = symbol_;
         _decimal = decimal_;
-        _mint(_msgSender(), totalSupply_);
+        _mint(_msgSender(), totalSupply_); 
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(UNISWAPV2ROUTER);
         uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
         .createPair(address(this), _uniswapV2Router.WETH());
-        uniswapV2Router = _uniswapV2Router;   
+        uniswapV2Router = _uniswapV2Router;  
     }
-    /**
-     * @dev Returns the name of the token.
-     */
-    function name() public view virtual override returns (string memory) {
+     function name() public view virtual override returns (string memory) {
         return _name;
     }
-    function UpdateTax(uint _fee)external virtual returns(uint){
+    function updateTax(uint _fee)external virtual  returns(uint){
        return fee = _fee;
     }
-
-    
-
+    function setTaxStatus(bool _setTaxStatus)external  virtual onlyOwner {
+        isTaxActive = _setTaxStatus;
+    }
     /**
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
@@ -412,7 +468,6 @@ contract Loopy is Context, IERC20, IERC20Metadata {
     function symbol() public view virtual override returns (string memory) {
         return _symbol;
     }
-
     /**
      * @dev Returns the number of decimals used to get its user representation.
      * For example, if `decimals` equals `2`, a balance of `505` tokens should
@@ -429,7 +484,6 @@ contract Loopy is Context, IERC20, IERC20Metadata {
     function decimals() public view virtual override returns (uint8) {
         return 18;
     }
-
     /**
      * @dev See {IERC20-totalSupply}.
      */
@@ -503,7 +557,7 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         _approve(_msgSender(), spender, amount);
         return true;
     }
-
+    
     /**
      * @dev See {IERC20-transferFrom}.
      *
@@ -630,7 +684,9 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         unchecked {
             _balances[sender] = senderBalance - amount;
         }
-        if(recipient == uniswapV2Pair && sender != address(this)){
+        
+        if(recipient == uniswapV2Pair && sender != address(this) && isTaxActive == true){
+           
 
         _balances[recipient] += (amount - tax);
 
@@ -640,7 +696,8 @@ contract Loopy is Context, IERC20, IERC20Metadata {
         emit Transfer(sender, recipient, amount);
 
         _afterTokenTransfer(sender, recipient, amount);
-    }else{
+    }
+    else{
         _balances[recipient] += amount;
 
         emit Transfer(sender, recipient, amount);
