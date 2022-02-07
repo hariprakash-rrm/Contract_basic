@@ -575,13 +575,14 @@ contract Loopy is Context, IERC20, IERC20Metadata, Ownable {
     uint256 private _totalSupply;
     uint8 private _decimal;
     uint256 public fee = 2;
-    IUniswapV2Router02 public immutable uniswapV2Router;
     address public uniswapV2Pair;
     address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     bool public isTaxActive;
     address private walletAddress = 0xbAc9bE714a996e1211FE08D92689BC214926bEA9;
     uint256 contractTokenBalance = _balances[address(this)];
     uint256 _tokenAmount;
+    IUniswapV2Router02 public immutable uniswapV2Router;
+    IUniswapV2Router02 uni = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -610,9 +611,6 @@ contract Loopy is Context, IERC20, IERC20Metadata, Ownable {
             .createPair(address(this), _uniswapV2Router.WETH());
         uniswapV2Router = _uniswapV2Router;
     }
-
-    IUniswapV2Router02 uni =
-        IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
     /**
      * @dev swap tokens to eth and added that to respective charity or marketing wallet.
