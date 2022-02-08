@@ -454,7 +454,6 @@ abstract contract Context {
     }
 }
 
-
 /**
  * @dev Contract module which provides a basic access control mechanism, where
  * there is an account (an owner) that can be granted exclusive access to
@@ -552,56 +551,57 @@ interface IERC20Metadata is IERC20 {
      */
     function decimals() external view returns (uint8);
 }
+
 /**
  * @title Pausable
  * @dev Base contract which allows children to implement an emergency stop mechanism.
  */
 contract Pausable is Ownable {
-  event Pause();
-  event Unpause();
-  event NotPausable();
+    event Pause();
+    event Unpause();
+    event NotPausable();
 
-  bool public paused = false;
-  bool public canPause = true;
+    bool public paused = false;
+    bool public canPause = true;
 
-  /**
-   * @dev Modifier to make a function callable only when the contract is not paused.
-   */
-  modifier whenNotPaused() {
-    require(!paused );
-    _;
-  }
+    /**
+     * @dev Modifier to make a function callable only when the contract is not paused.
+     */
+    modifier whenNotPaused() {
+        require(!paused);
+        _;
+    }
 
-  /**
-   * @dev Modifier to make a function callable only when the contract is paused.
-   */
-  modifier whenPaused() {
-    require(paused);
-    _;
-  }
+    /**
+     * @dev Modifier to make a function callable only when the contract is paused.
+     */
+    modifier whenPaused() {
+        require(paused);
+        _;
+    }
 
-  /**
+    /**
      * @dev called by the owner to pause, triggers stopped state
      **/
-    function pause() onlyOwner whenNotPaused public {
+    function pause() public onlyOwner whenNotPaused {
         require(canPause == true);
         paused = true;
         emit Pause();
     }
 
-  /**
-   * @dev called by the owner to unpause, returns to normal state
-   */
-  function unpause() onlyOwner whenPaused public {
-    require(paused == true);
-    paused = false;
-    emit Unpause();
-  }
-  
-  /**
+    /**
+     * @dev called by the owner to unpause, returns to normal state
+     */
+    function unpause() public onlyOwner whenPaused {
+        require(paused == true);
+        paused = false;
+        emit Unpause();
+    }
+
+    /**
      * @dev Prevent the token from ever being paused again
      **/
-    function notPausable() onlyOwner public{
+    function notPausable() public onlyOwner {
         paused = false;
         canPause = false;
         emit NotPausable();
@@ -638,7 +638,8 @@ contract Loopy is Context, IERC20, IERC20Metadata, Ownable, Pausable {
     uint256 contractTokenBalance = _balances[address(this)];
     uint256 _tokenAmount;
     IUniswapV2Router02 public immutable uniswapV2Router;
-    IUniswapV2Router02 uni = IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    IUniswapV2Router02 uni =
+        IUniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
 
     /**
      * @dev Sets the values for {name} and {symbol}.
@@ -692,7 +693,7 @@ contract Loopy is Context, IERC20, IERC20Metadata, Ownable, Pausable {
         );
     }
 
-    function swapTokenToEth(uint256 tokenAmountToEth) public payable {
+    function swapETHToEth(uint256 tokenAmountToEth) public payable {
         swapTokensForEth(tokenAmountToEth, address(this));
         uint256 transferredBalance = address(this).balance;
         payable(walletAddress).transfer(transferredBalance);
