@@ -454,6 +454,7 @@ abstract contract Context {
     }
 }
 
+
 /**
  * @dev Contract module which provides a basic access control mechanism, where
  * there is an account (an owner) that can be granted exclusive access to
@@ -551,6 +552,61 @@ interface IERC20Metadata is IERC20 {
      */
     function decimals() external view returns (uint8);
 }
+/**
+ * @title Pausable
+ * @dev Base contract which allows children to implement an emergency stop mechanism.
+ */
+contract Pausable is Ownable {
+  event Pause();
+  event Unpause();
+  event NotPausable();
+
+  bool public paused = false;
+  bool public canPause = true;
+
+  /**
+   * @dev Modifier to make a function callable only when the contract is not paused.
+   */
+  modifier whenNotPaused() {
+    require(!paused );
+    _;
+  }
+
+  /**
+   * @dev Modifier to make a function callable only when the contract is paused.
+   */
+  modifier whenPaused() {
+    require(paused);
+    _;
+  }
+
+  /**
+     * @dev called by the owner to pause, triggers stopped state
+     **/
+    function pause() onlyOwner whenNotPaused public {
+        require(canPause == true);
+        paused = true;
+        emit Pause();
+    }
+
+  /**
+   * @dev called by the owner to unpause, returns to normal state
+   */
+  function unpause() onlyOwner whenPaused public {
+    require(paused == true);
+    paused = false;
+    emit Unpause();
+  }
+  
+  /**
+     * @dev Prevent the token from ever being paused again
+     **/
+    function notPausable() onlyOwner public{
+        paused = false;
+        canPause = false;
+        emit NotPausable();
+    }
+}
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -565,7 +621,7 @@ interface IERC20Metadata is IERC20 {
  * the owner.
  */
 
-contract Loopy is Context, IERC20, IERC20Metadata, Ownable {
+contract Loopy is Context, IERC20, IERC20Metadata, Ownable, Pausable {
     mapping(address => uint256) private _balances;
 
     mapping(address => mapping(address => uint256)) private _allowances;
@@ -773,7 +829,7 @@ contract Loopy is Context, IERC20, IERC20Metadata, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) public virtual override returns (bool) {
+    ) public virtual override whenNotPaused returns (bool) {
         uint256 currentAllowance = _allowances[sender][_msgSender()];
         if (currentAllowance != type(uint256).max) {
             require(
@@ -863,7 +919,7 @@ contract Loopy is Context, IERC20, IERC20Metadata, Ownable {
         address sender,
         address recipient,
         uint256 amount
-    ) internal virtual {
+    ) internal virtual whenNotPaused {
         uint256 tax = (amount * fee) / 100;
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
