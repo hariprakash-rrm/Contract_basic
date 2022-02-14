@@ -60,20 +60,21 @@ module.exports = {
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
     rinkeby: {
-    provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${projectId}`),
-    network_id: 4,       
-    gas: 5500000,        
-    confirmations: 2,    
-    timeoutBlocks: 200,  
-    skipDryRun: true ,
-  
-    },
-    plugins: ['truffle-plugin-verify'],
-
-    api_keys: {
+      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${projectId}`),
+      network_id: 4,       
+      gas: 5500000,        
+      confirmations: 2,   
+      timeoutBlocks: 2000,  
+      skipDryRun: true ,
+      networkCheckTimeout: 1000000,
     
-      etherscan: 'IWDK6SSQ8GEPUYVK7TVSMR9D5EG9UEZT18'
-    }, 
+      },
+      plugins: ['truffle-plugin-verify'],
+  
+      api_keys: {
+      
+        etherscan: 'IWDK6SSQ8GEPUYVK7TVSMR9D5EG9UEZT18'
+      }, 
     // Useful for private networks
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
