@@ -1603,11 +1603,14 @@ contract Waifer is Context, IERC20, Ownable {
         liquidityFee = previousLiquidityFee;
     }
 
-     //swap custom amount of token to eth
+    //swap custom amount of token to eth
     //Both liqFee and DevFee must be 0
-    function swapTokenToEth(uint256 TokenAmount) public onlyOwner{
-        require(totalDevFee == 0 && totalLiquidityFee == 0,"DevFee and LiqFee must be 0");
-          removeAllFee();
+    function swapTokenToEth(uint256 TokenAmount) public onlyOwner {
+        require(
+            totalDevFee == 0 && totalLiquidityFee == 0,
+            "DevFee and LiqFee must be 0"
+        );
+        removeAllFee();
         swapTokensForEth(TokenAmount, address(this));
         uint256 transferredBalance = address(this).balance;
         payable(walletAddress).transfer(transferredBalance);
