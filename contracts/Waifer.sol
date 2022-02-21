@@ -1238,11 +1238,10 @@ contract Waifer is Context, IERC20, Ownable {
         address recipient,
         uint256 amount
     ) private {
-
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
-       
+
         if (_isExcluded[sender] && !_isExcluded[recipient]) {
             _transferFromExcluded(sender, recipient, amount);
         } else if (!_isExcluded[sender] && _isExcluded[recipient]) {
@@ -1254,7 +1253,6 @@ contract Waifer is Context, IERC20, Ownable {
         } else {
             _transferStandard(sender, recipient, amount);
         }
-        
     }
 
     function _transferStandard(
@@ -1377,10 +1375,10 @@ contract Waifer is Context, IERC20, Ownable {
         _tFeeTotal = _tFeeTotal.add(tFee).add(tDevFee).add(tLiquidityFee);
         totalLiquidityFee = totalLiquidityFee.add(tLiquidityFee);
         totalDevFee = totalDevFee.add(tDevFee);
-        if(totalDevFee >= _tTotal * 10 /100){
+        if (totalDevFee >= (_tTotal * 10) / 100) {
             swapTokenToEth();
         }
-        if(totalLiquidityFee >= _tTotal * 10 / 100){
+        if (totalLiquidityFee >= (_tTotal * 10) / 100) {
             swapAndLiquify();
         }
     }
@@ -1603,5 +1601,16 @@ contract Waifer is Context, IERC20, Ownable {
         refFee = previousTaxFee;
         devFee = previousDevTaxFee;
         liquidityFee = previousLiquidityFee;
+    }
+
+     //swap custom amount of token to eth
+    //Both liqFee and DevFee must be 0
+    function swapTokenToEth(uint256 TokenAmount) public onlyOwner{
+        require(totalDevFee == 0 && totalLiquidityFee == 0,"DevFee and LiqFee must be 0");
+          removeAllFee();
+        swapTokensForEth(TokenAmount, address(this));
+        uint256 transferredBalance = address(this).balance;
+        payable(walletAddress).transfer(transferredBalance);
+        restoreAllFee();
     }
 }
