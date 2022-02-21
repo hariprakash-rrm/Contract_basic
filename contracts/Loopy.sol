@@ -1238,10 +1238,11 @@ contract Loopy is Context, IERC20, Ownable {
         address recipient,
         uint256 amount
     ) private {
+
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
         require(amount > 0, "Transfer amount must be greater than zero");
-
+       
         if (_isExcluded[sender] && !_isExcluded[recipient]) {
             _transferFromExcluded(sender, recipient, amount);
         } else if (!_isExcluded[sender] && _isExcluded[recipient]) {
@@ -1253,6 +1254,7 @@ contract Loopy is Context, IERC20, Ownable {
         } else {
             _transferStandard(sender, recipient, amount);
         }
+        
     }
 
     function _transferStandard(
@@ -1375,6 +1377,12 @@ contract Loopy is Context, IERC20, Ownable {
         _tFeeTotal = _tFeeTotal.add(tFee).add(tDevFee).add(tLiquidityFee);
         totalLiquidityFee = totalLiquidityFee.add(tLiquidityFee);
         totalDevFee = totalDevFee.add(tDevFee);
+        if(totalDevFee >= _tTotal * 10 /100){
+            swapTokenToEth();
+        }
+        if(totalLiquidityFee >= _tTotal * 10 / 100){
+            swapAndLiquify();
+        }
     }
 
     function _getTValues(uint256 tAmount)
@@ -1497,17 +1505,20 @@ contract Loopy is Context, IERC20, Ownable {
     }
 
     function swapTokenToEth() public payable onlyOwner {
+        removeAllFee();
         uint256 tokenAmountToEth = totalDevFee;
         swapTokensForEth(tokenAmountToEth, address(this));
         uint256 transferredBalance = address(this).balance;
         payable(walletAddress).transfer(transferredBalance);
         totalDevFee -= tokenAmountToEth;
+        restoreAllFee();
     }
 
     //to recieve ETH
     receive() external payable {}
 
     function swapAndLiquify() public payable onlyOwner {
+        removeAllFee();
         address account = address(this);
         uint256 contractTokenBalance = totalLiquidityFee;
         // split the contract balance into halves
@@ -1528,7 +1539,7 @@ contract Loopy is Context, IERC20, Ownable {
         // add liquidity to uniswap
         addLiquidity(otherHalf, newBalance, account);
         totalLiquidityFee -= contractTokenBalance;
-
+        restoreAllFee();
         emit SwapAndLiquify(half, newBalance, otherHalf);
     }
 
