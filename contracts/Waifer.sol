@@ -1046,7 +1046,7 @@ contract Waifer is Context, IERC20, Ownable {
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public uniswapV2Pair;
     address public walletAddress = 0x95ef7300521B1778F822485a6b3592021a7434C8;
-    address UNISWAPV2ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+    address UNISWAPV2ROUTER = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3;
 
     event SwapAndLiquify(
         uint256 tokensSwapped,

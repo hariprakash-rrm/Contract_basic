@@ -59,22 +59,28 @@ module.exports = {
     // },
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
-    rinkeby: {
-      provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${projectId}`),
-      network_id: 4,       
-      gas: 5500000,        
-      confirmations: 2,  
-      networkCheckTimeout: 10000,   
-      timeoutBlocks: 200,  
-      skipDryRun: true ,
+    // rinkeby: {
+    //   provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${projectId}`),
+    //   network_id: 4,       
+    //   gas: 5500000,        
+    //   confirmations: 2,  
+    //   networkCheckTimeout: 10000,   
+    //   timeoutBlocks: 200,  
+    //   skipDryRun: true ,
     
+    //   },
+      testnet: {
+        provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545/`),
+        network_id: 97,
+        skipDryRun: true,
+        networkCheckTimeout: 100000000,
+        timoutBlocks: 200000,
       },
-      plugins: ['truffle-plugin-verify'],
+      
   
       api_keys: {
-      
-        etherscan: 'IWDK6SSQ8GEPUYVK7TVSMR9D5EG9UEZT18'
-      }, 
+        bscscan:'A9WI7GTAYKMHPEUZEZKYIVQU348QJU33NZ'
+      },
     // Useful for private networks
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
@@ -128,6 +134,6 @@ module.exports = {
   ],
 
   api_keys: {
-    etherscan: "NW9H8X87YZVMUJUABFEJ8CFAA83C8NHQIK"
+    bscscan:'A9WI7GTAYKMHPEUZEZKYIVQU348QJU33NZ'
   }
 };
